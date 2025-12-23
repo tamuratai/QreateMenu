@@ -1,4 +1,4 @@
-﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+﻿<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
@@ -9,12 +9,10 @@
     :root{
       --bg:#0b0f14;
       --card:#111824;
-      --card2:#0f1621;
       --text:#e8eef6;
       --muted:#a9b6c6;
       --line:rgba(255,255,255,.12);
       --danger:#ff6b6b;
-      --accent:#6ee7ff;
       --radius:16px;
       --pad:14px;
       --h:56px;
@@ -36,19 +34,11 @@
       border-bottom: 1px solid var(--line);
       z-index: 10;
     }
-    header h1{
-      font-size: 18px;
-      margin:0;
-      letter-spacing: .2px;
-    }
-    header .sub{
-      margin-top:6px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
+    header h1{ font-size: 18px; margin:0; letter-spacing: .2px; }
+    header .sub{ margin-top:6px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+
     main{
-      padding: 12px 16px 110px; /* 下部固定バー分の余白 */
+      padding: 12px 16px 110px;
       max-width: 860px;
       margin: 0 auto;
     }
@@ -59,24 +49,11 @@
       padding: var(--pad);
       box-shadow: var(--shadow);
     }
-    .grid{
-      display:grid;
-      gap: 12px;
-    }
-    .two{
-      display:grid;
-      gap: 12px;
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 720px){
-      .two{ grid-template-columns: 1fr 1fr; }
-    }
-    label{
-      display:block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
+    .grid{ display:grid; gap: 12px; }
+    .two{ display:grid; gap: 12px; grid-template-columns: 1fr; }
+    @media (min-width: 720px){ .two{ grid-template-columns: 1fr 1fr; } }
+
+    label{ display:block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
     .field{
       background: rgba(255,255,255,.05);
       border: 1px solid rgba(255,255,255,.14);
@@ -95,42 +72,32 @@
       font-size: 18px;
       line-height: 1.2;
     }
-    .hint{
-      margin-top:6px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .row{
+    .field input[readonly]{ opacity:.85; }
+    .hint{ margin-top:6px; font-size: 12px; color: var(--muted); }
+
+    .seg{
       display:flex;
-      align-items:center;
       gap:10px;
       flex-wrap:wrap;
     }
-    .chip{
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-    }
-    .toggle{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding: 12px 12px;
+    .seg button{
+      flex:1;
+      min-width: 140px;
+      height: 44px;
       border-radius: 14px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size: 16px;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
     }
-    .toggle input{ transform: scale(1.2); }
-    .warn{
-      color: var(--danger);
-      white-space: pre-line;
-      font-size: 13px;
-      margin-top: 10px;
+    .seg button.active{
+      background: rgba(110,231,255,.18);
+      border-color: rgba(110,231,255,.38);
     }
+    .warn{ color: var(--danger); white-space: pre-line; font-size: 13px; margin-top: 10px; }
+
     details{
       margin-top: 10px;
       border-radius: 14px;
@@ -158,32 +125,30 @@
       font-size: 12px;
     }
 
-    /* QR表示 */
+    /* 合成画像表示 */
     .qrWrap{
       display:flex;
       gap: 12px;
       align-items:flex-start;
       flex-wrap: wrap;
       margin-top: 12px;
+      display:none;
     }
-    #qrcode{
+    #previewCanvas{
       background: #fff;
-      padding: 10px;
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,.20);
+      display:block;
+      width: 260px;
+      height: auto;
     }
-    #qrcode canvas, #qrcode img{ width: 220px; height: 220px; display:block; }
-    .qrInfo{
-      flex: 1;
-      min-width: 220px;
-    }
+    .qrInfo{ flex: 1; min-width: 220px; }
+    .kv{ color: var(--muted); font-size: 12px; margin-top: 6px; }
 
     /* 下部固定アクションバー */
     .bar{
       position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      left: 0; right: 0; bottom: 0;
       padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
       background: linear-gradient(to top, rgba(11,15,20,.96), rgba(11,15,20,.72));
       border-top: 1px solid var(--line);
@@ -218,11 +183,8 @@
       border-color: rgba(110,231,255,.35);
     }
     .btn:active{ transform: translateY(1px); }
-    a.dl{
-      flex:1;
-      text-decoration:none;
-      display:none; /* 生成後に表示 */
-    }
+    a.dl{ flex:1; text-decoration:none; display:none; }
+
     .toast{
       position: fixed;
       left: 50%;
@@ -248,8 +210,8 @@
 <header>
   <h1>メニューブックQR 生成</h1>
   <div class="sub">
-    ヘッダK＋店舗(4)＋「,」＋商品(4)＋…（全48文字固定）。<br>
-    店舗/商品コードは<strong>右詰め・左0埋め</strong>。品名は左詰め・右スペース。
+    税率はボタン選択（8%/10%）。税は税抜入力から自動計算。<br>
+    生成画像は「品名＋QR＋請求金額」を1枚にまとめます。
   </div>
 </header>
 
@@ -273,28 +235,13 @@
         </div>
       </div>
 
-      <div class="two" style="margin-top:12px;">
-        <div>
-          <label>税率(%)（半角数字 1〜2桁 / 右詰め、8→08）</label>
-          <div class="field">
-            <input id="taxRate" type="tel" inputmode="numeric" autocomplete="off" placeholder="例: 10 / 8" maxlength="2">
-          </div>
-          <div class="row" style="margin-top:8px;">
-            <span class="chip">8 → 08 に変換</span>
-            <span class="chip">区切りは自動</span>
-          </div>
+      <div style="margin-top:12px;">
+        <label>税率（排他的選択 / デフォルト10%）</label>
+        <div class="seg">
+          <button id="btnTax10" type="button" class="active" aria-pressed="true">10%</button>
+          <button id="btnTax8" type="button" aria-pressed="false">8%（軽減）</button>
         </div>
-
-        <div>
-          <label>軽減税率</label>
-          <div class="toggle">
-            <div>
-              <div style="font-size:14px;color:var(--text);font-weight:600;">軽減税率を適用</div>
-              <div class="hint" style="margin:6px 0 0;">ON: “*” / OFF: 半角スペース</div>
-            </div>
-            <input id="reduced" type="checkbox">
-          </div>
-        </div>
+        <div class="hint">8%を選ぶと軽減税率フラグ（*）も自動で反映されます。</div>
       </div>
 
       <div style="margin-top:12px;">
@@ -313,9 +260,24 @@
           </div>
         </div>
         <div>
-          <label>税（半角数字 最大5 / 左詰め・右スペース）</label>
+          <label>税（自動計算 / 左詰め・右スペース）</label>
           <div class="field">
-            <input id="taxAmount" type="tel" inputmode="numeric" autocomplete="off" placeholder="例: 80" maxlength="5">
+            <input id="taxAmount" type="text" readonly value="">
+          </div>
+          <div class="hint">税抜き価格または税率変更で更新します。</div>
+        </div>
+      </div>
+
+      <div class="two" style="margin-top:12px;">
+        <div>
+          <label>請求金額（税抜＋税）</label>
+          <div class="field">
+            <input id="totalAmount" type="text" readonly value="">
+          </div>
+        </div>
+        <div>
+          <div class="hint" style="margin-top:28px;">
+            ※請求金額はQR画像の下にも表示されます（PNG内）。
           </div>
         </div>
       </div>
@@ -323,19 +285,22 @@
       <div id="msg" class="warn"></div>
 
       <details>
-        <summary>生成レコードの確認（コピー前の確認用）</summary>
+        <summary>生成レコードの確認（固定長48 / スペース含む）</summary>
         <code id="payload" class="mono"></code>
         <div class="hint">スペース可視化（表示専用）：</div>
         <code id="payloadVisible" class="mono"></code>
       </details>
 
-      <div class="qrWrap" style="display:none;" id="qrSection">
-        <div id="qrcode"></div>
+      <div class="qrWrap" id="qrSection">
+        <canvas id="previewCanvas" width="320" height="400"></canvas>
         <div class="qrInfo">
-          <div class="hint">PNG保存名：<span class="mono" id="fname"></span></div>
-          <div class="hint">QRは白背景で生成しています（表示確認しやすさ優先）。</div>
+          <div class="kv">PNG保存名：<span class="mono" id="fname"></span></div>
+          <div class="kv">※プレビューは合成画像（品名＋QR＋請求金額）です。</div>
         </div>
       </div>
+
+      <!-- QR生成用（非表示） -->
+      <div id="qrcode" style="position:absolute; left:-99999px; top:-99999px;"></div>
     </section>
   </div>
 </main>
@@ -357,7 +322,11 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
+  // 固定長（Excel仕様）
   const LEN_STORE = 4, LEN_ITEM = 4, LEN_TAX = 2, LEN_REDUCED = 1, LEN_NAME = 20, LEN_PRICE_EX = 6, LEN_TAX_AMT = 5;
+
+  // 税率状態（デフォルト10）
+  let currentTaxRate = 10; // 8 or 10
 
   function isHalfWidthDigits(s){ return /^[0-9]+$/.test(s); }
   function padLeftFill(s, len, fillChar){
@@ -389,6 +358,56 @@
     return t;
   }
 
+  function formatYenLike(n){
+    if (!Number.isFinite(n)) return "";
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function calcTax(priceEx, rate){
+    // 端数処理：ここを変更すればルール変更できます
+    // return Math.round(priceEx * rate / 100); // 四捨五入
+    // return Math.ceil(priceEx * rate / 100);  // 切り上げ
+    return Math.floor(priceEx * rate / 100);   // 切り捨て（現状）
+  }
+
+  function updateTaxAuto(){
+    const exRaw = $("priceEx").value.trim();
+    if (!exRaw || !isHalfWidthDigits(exRaw)) {
+      $("taxAmount").value = "";
+      $("totalAmount").value = "";
+      return;
+    }
+    const ex = parseInt(exRaw, 10);
+    const tax = calcTax(ex, currentTaxRate);
+    const total = ex + tax;
+
+    $("taxAmount").value = String(tax);                 // 表示は数値のみ
+    $("totalAmount").value = formatYenLike(total);      // 見やすくカンマ
+  }
+
+  function setTaxRate(rate){
+    currentTaxRate = rate;
+    const is10 = (rate === 10);
+    $("btnTax10").classList.toggle("active", is10);
+    $("btnTax10").setAttribute("aria-pressed", is10 ? "true" : "false");
+    $("btnTax8").classList.toggle("active", !is10);
+    $("btnTax8").setAttribute("aria-pressed", !is10 ? "true" : "false");
+    updateTaxAuto();
+  }
+
+  // 税率ボタン
+  $("btnTax10").addEventListener("click", () => setTaxRate(10));
+  $("btnTax8").addEventListener("click", () => setTaxRate(8));
+
+  // 税抜入力変更で自動再計算
+  $("priceEx").addEventListener("input", updateTaxAuto);
+
+  // 入力中に非数値が混ざったら軽く整える（任意）
+  $("priceEx").addEventListener("blur", () => {
+    const v = $("priceEx").value.trim();
+    if (v && isHalfWidthDigits(v)) $("priceEx").value = String(parseInt(v, 10));
+  });
+
   function buildPayload(){
     const errors = [];
     const header = "K";
@@ -404,17 +423,10 @@
     const item = padLeftFill(itemIn, LEN_ITEM, "0");
     if (item === null) errors.push(`商品コード：${LEN_ITEM}文字を超えています。`);
 
-    const taxInRaw = $("taxRate").value.trim();
-    if (!taxInRaw || !isHalfWidthDigits(taxInRaw) || taxInRaw.length > LEN_TAX) {
-      errors.push("税率(%)：半角数字で1～2桁入力してください（例: 10 / 8）。");
-    }
-    let taxEnc = taxInRaw;
-    if (taxInRaw.length === 1) taxEnc = "0" + taxInRaw;
-    const tax = padLeftFill(taxEnc, LEN_TAX, "0");
-    if (tax === null) errors.push(`税率：${LEN_TAX}文字を超えています。`);
-
-    const reduced = $("reduced").checked ? "*" : " ";
-    if (reduced.length !== LEN_REDUCED) errors.push("軽減税率：内部エラー（長さ不整合）。");
+    // 税率フィールド（2文字）
+    const tax = (currentTaxRate === 8) ? "08" : "10";
+    // 軽減税率フラグ（8%のときだけ "*"、それ以外はスペース）
+    const reduced = (currentTaxRate === 8) ? "*" : " ";
 
     const nameRaw = $("name").value.trim();
     if (!nameRaw) errors.push("品名：必須です。");
@@ -427,37 +439,87 @@
     const priceEx = padRightFill(priceExIn, LEN_PRICE_EX, " ");
     if (priceEx === null) errors.push(`税抜き価格：${LEN_PRICE_EX}文字を超えています。`);
 
-    const taxAmtIn = $("taxAmount").value.trim();
-    if (!taxAmtIn || !isHalfWidthDigits(taxAmtIn)) errors.push("税：半角数字で1～5桁入力してください。");
-    const taxAmt = padRightFill(taxAmtIn, LEN_TAX_AMT, " ");
-    if (taxAmt === null) errors.push(`税：${LEN_TAX_AMT}文字を超えています。`);
+    // 税（自動計算）
+    if (!priceExIn || !isHalfWidthDigits(priceExIn)) {
+      errors.push("税：税抜き価格が未入力または不正です。");
+    }
+    let taxNum = 0;
+    if (priceExIn && isHalfWidthDigits(priceExIn)) {
+      taxNum = calcTax(parseInt(priceExIn, 10), currentTaxRate);
+    }
+    const taxAmtStr = String(taxNum);
+    if (!isHalfWidthDigits(taxAmtStr)) errors.push("税：内部エラー（数値化失敗）。");
+    if (taxAmtStr.length > LEN_TAX_AMT) errors.push(`税：${LEN_TAX_AMT}桁を超えています。`);
+    const taxAmt = padRightFill(taxAmtStr, LEN_TAX_AMT, " ");
 
     if (errors.length) return { error: errors.join("\n") };
 
-    const payload =
-      header + store + sep + item + sep + tax + reduced + sep + name + sep + priceEx + sep + taxAmt;
+    const payload = header + store + sep + item + sep + tax + reduced + sep + name + sep + priceEx + sep + taxAmt;
 
-    return { payload, itemEncoded: item, nameRaw };
+    // 請求金額（表示/画像用）
+    const total = parseInt(priceExIn, 10) + taxNum;
+
+    return { payload, itemEncoded: item, nameRaw, taxNum, total };
   }
 
-  function renderQR(payload){
+  function renderQRToHidden(payload){
     const qrDiv = $("qrcode");
     qrDiv.innerHTML = "";
     new QRCode(qrDiv, { text: payload, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
   }
 
+  function drawCompositeImage(nameRaw, total, qrCanvas){
+    // 合成キャンバス：上 品名 / 中 QR / 下 請求金額
+    const canvas = $("previewCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // サイズ設計
+    const padding = 18;
+    const titleH = 42;
+    const footH  = 42;
+    const qrSize = 220;
+
+    const w = 320;
+    const h = padding + titleH + 10 + qrSize + 10 + footH + padding;
+
+    canvas.width = w;
+    canvas.height = h;
+
+    // 背景（白）
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+
+    // テキスト（黒）
+    ctx.fillStyle = "#000000";
+
+    // 品名（上）
+    ctx.font = "bold 18px system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const title = nameRaw;
+    ctx.fillText(title, w/2, padding + titleH/2);
+
+    // QR
+    const qrX = (w - qrSize)/2;
+    const qrY = padding + titleH + 10;
+    // QRの背景
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(qrX - 6, qrY - 6, qrSize + 12, qrSize + 12);
+    // QR本体（qrcodejsのcanvasを描画）
+    ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+
+    // 請求金額（下）
+    ctx.fillStyle = "#000000";
+    ctx.font = "bold 18px system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP, sans-serif";
+    const amountText = "請求金額 " + formatYenLike(total);
+    const footY = qrY + qrSize + 10 + footH/2;
+    ctx.fillText(amountText, w/2, footY);
+  }
+
   function enableDownload(filename){
-    const qrDiv = $("qrcode");
-    const canvas = qrDiv.querySelector("canvas");
-    const img = qrDiv.querySelector("img");
-
-    let dataUrl = "";
-    if (canvas) dataUrl = canvas.toDataURL("image/png");
-    else if (img) dataUrl = img.src;
-    else return;
-
     const a = $("btnDl");
-    a.href = dataUrl;
+    const canvas = $("previewCanvas");
+    a.href = canvas.toDataURL("image/png");
     a.download = filename;
     a.style.display = "block";
   }
@@ -479,19 +541,30 @@
     $("payload").textContent = res.payload;
     $("payloadVisible").textContent = visualizeSpaces(res.payload);
 
-    renderQR(res.payload);
+    // QRを非表示領域に生成
+    renderQRToHidden(res.payload);
 
-    const fname = sanitizeFilenamePart(res.itemEncoded) + "_" + sanitizeFilenamePart(res.nameRaw) + ".png";
-    $("fname").textContent = fname;
+    // qrcodejs が生成した canvas を取得して合成
+    setTimeout(() => {
+      const qrCanvas = $("qrcode").querySelector("canvas");
+      if (!qrCanvas){
+        setMessage("QR生成に失敗しました（canvasが取得できません）。");
+        return;
+      }
 
-    // QR生成後に表示
-    $("qrSection").style.display = "flex";
+      // 合成描画（品名＋QR＋請求金額）
+      drawCompositeImage(res.nameRaw, res.total, qrCanvas);
 
-    // download link
-    setTimeout(() => enableDownload(fname), 50);
+      // PNGファイル名：商品コード(エンコード後4文字) + "_" + 品名(フォーム入力のまま) + ".png"
+      const fname = sanitizeFilenamePart(res.itemEncoded) + "_" + sanitizeFilenamePart(res.nameRaw) + ".png";
+      $("fname").textContent = fname;
 
-    showToast("QRを生成しました");
-    console.log("[QR] len=", res.payload.length, res.payload);
+      enableDownload(fname);
+      $("qrSection").style.display = "flex";
+
+      showToast("QRを生成しました");
+      console.log("[QR] len=", res.payload.length, res.payload);
+    }, 60);
   });
 
   $("btnCopy").addEventListener("click", async () => {
@@ -504,7 +577,6 @@
       await navigator.clipboard.writeText(text);
       showToast("コピーしました");
     }catch(e){
-      // file:// 等で制限される場合のフォールバック
       const ta = document.createElement("textarea");
       ta.value = text;
       document.body.appendChild(ta);
@@ -514,6 +586,10 @@
       showToast("コピーしました");
     }
   });
+
+  // 初期状態：10%選択
+  setTaxRate(10);
+  updateTaxAuto();
 </script>
 </body>
 </html>
