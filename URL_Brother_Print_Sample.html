@@ -28,9 +28,9 @@ function printurl(scheme) {
 	var FILE = 'filename'; // parameter name
 	var SIZE = 'size'; // parameter name
 	var COPIES = 'copies'; // parameter name
-	var QR = 'QRcode';
-	var TEXT1 = 'ItemName';
-	var TEXT2 = 'Price';
+	var QR = 'barcode_QRcode';
+	var TEXT1 = 'text_ItemName';
+	var TEXT2 = 'text_Price';
 	var LBX = encodeURIComponent(document.getElementById("input_printfile").value); // print file name
 	var BIN = encodeURIComponent(document.getElementById("input_binfile").value); // size name
 	var copies = encodeURIComponent(document.getElementById("input_quantity").value);
@@ -67,7 +67,7 @@ function sendprint_urlscheme() {
 	<p><button onclick="sendprint_urlscheme()">Test Print</button></p>
 	<p><button onclick="previewURL()">Preview URL</button></p>
 	<hr>
-	<label>filename：<input type="text" id="input_printfile" size="40" value="AES-CUT_MenuQR.lbx"></label><br>
+	<label>filename：<input type="text" id="input_printfile" size="40" value="https://tamuratai.github.io/QreateMenu/AES-CUT_MenuQR.lbx"></label><br>
 	<label>size：<input type="text" id="input_binfile" size="40" value="Width36mm"></label><br>
 	<hr>
 	<label>Object Replacement：</label><br>
