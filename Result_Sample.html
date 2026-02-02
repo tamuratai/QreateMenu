@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>SmoothPrint Print Result</title>
+
+<style>
+
+button {
+	font-size: 20px;
+	width: 150px;
+	height: 40px;
+}
+</style>
+
+<script type="text/javascript">
+
+function init() {
+	var resultMsg = location.search.match(/result.?=(.*?)(&|$)/);
+	var errorCodeMsg = location.search.match(/errorcode.?=(.*?)(&|$)/);
+	if (resultMsg == null) {
+		alert('Unknown Error')
+		return
+	}
+	var result = decodeURIComponent(resultMsg[1]);
+	if (errorCodeMsg != null) {
+		result += ('\n' + decodeURIComponent(errorCodeMsg[1]));
+	}
+	document.getElementById("result_message").innerHTML = result
+	alert(result);
+}
+
+</script>
+</head>
+
+<body onload="init()">
+	<h2>SmoothPrint Print Result</h2>
+	<label id="result_message"></label>
+</body>
+</html>

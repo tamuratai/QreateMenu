@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width">
+<title>URLShceme_Print_Brother</title>
+
+<style>
+	.autowrap {
+	  word-wrap: break-word;
+	  overflow-wrap: break-word;
+	  max-width: 100%;
+	}
+</style>
+
+<style>
+
+button {
+	font-size: 20px;
+	width: 150px;
+	height: 40px;
+}
+</style>
+
+<script type="text/javascript">
+
+function printurl(scheme) {
+	var FILE = 'filename'; // parameter name
+	var SIZE = 'size'; // parameter name
+	var COPIES = 'copies'; // parameter name
+	var QR = 'QRcode';
+	var TEXT1 = 'ItemName';
+	var TEXT2 = 'Price';
+	var LBX = encodeURIComponent(document.getElementById("input_printfile").value); // print file name
+	var BIN = encodeURIComponent(document.getElementById("input_binfile").value); // size name
+	var copies = encodeURIComponent(document.getElementById("input_quantity").value);
+	var qr = encodeURIComponent(document.getElementById("input_qr").value);
+	var text1 = encodeURIComponent(document.getElementById("input_text1").value);
+	var text2 = encodeURIComponent(document.getElementById("input_text2").value);
+	var successURL = encodeURIComponent(window.location.href.replace('URL_Brother_Print_Sample', 'Result_Sample') + '?result='); // callbackURL TBD
+	var failureURL = encodeURIComponent(window.location.href.replace('URL_Brother_Print_Sample', 'Result_Sample') + '?result='); // callbackURL TBD
+	return scheme + '?' + 
+		FILE + '=' + LBX + '&' + 
+		SIZE + '=' + BIN + '&' + 
+		COPIES + '=' + copies + '&' + 
+		QR + '=' + qr  + '&' + 
+		TEXT1 + '=' + text1  + '&' +
+		TEXT2 + '=' + text2 + '&' +
+		'successCallback=' + successURL + '&' +
+		'failureCallback=' + failureURL
+}
+
+function previewURL() {
+	document.getElementById("url_name").innerHTML = "url: " + printurl("brotherwebprint://print")
+}
+
+function sendprint_urlscheme() {
+	var urldata = printurl("brotherwebprint://print")
+	location.href = urldata;
+}
+
+</script>
+</head>
+
+<body>
+	<h2>URLShceme_Print_Brother</h2>
+	<p><button onclick="sendprint_urlscheme()">Test Print</button></p>
+	<p><button onclick="previewURL()">Preview URL</button></p>
+	<hr>
+	<label>filename：<input type="text" id="input_printfile" size="40" value="AES-CUT_MenuQR.lbx"></label><br>
+	<label>size：<input type="text" id="input_binfile" size="40" value="Width36mm"></label><br>
+	<hr>
+	<label>Object Replacement：</label><br>
+	<label>text_ItemName：<input type="text" id="input_text1" size="40" value="あいてむ名"></label><br>
+	<label>text_Price：<input type="text" id="input_text2" size="40" value="999,999円"></label><br>
+	<label>barcode_Barcode：<input type="text" id="input_qr" size="40" value="12345678"></label><br>
+	<hr>
+	<p><label>copies：<input type="number" id="input_quantity" size="40" maxlength="40" value="1"></label></p>
+	<label id="url_name" class="autowrap">url: </label>
+	<hr>
+	<h4>Important:</h4>
+	<label>Before printing, share the template file (LBX file) and media information file with Smooth Print, and then type the filenames in the corresponding fields above.</label><br><br>
+	<hr>
+	<h4>Printing from other models:</h4>
+	<ol>
+	<li>Connect your mobile device to the printer.</li>
+	<li>Share the template file (LBX file) and media information file with Smooth Print, and then type the filenames in the corresponding sample program fields.</li>
+	<li>If you need to replace any objects, make sure that the object names are the same as those used in the sample program.</li>
+	</ol><br>
+	<hr>
+	<a href="https://support.brother.com/g/s/es/dev/en/specific/smooth_print/index.html?c=eu_ot&lang=en&navi=offall&comple=on&redirect=on" class="autowrap"><b>For more information, see the webpage.</b></a><br><br>
+	<hr>
+	<h4>事前準備：</h4>
+	<label>印刷前に、テンプレートファイル (.lbx) と用紙情報ファイル (.bin) をSmooth Printに共有し、テンプレートファイルのファイル名を "filename" 入力ボックスに、用紙情報ファイルのファイル名を "size" 入力ボックスに入力します。</label><br><br>
+	<hr>
+	<h4>他のモデルでの印刷：</h4>
+	<ol>
+	<li>接続：モバイル端末とプリンターを接続します。SmoothPrintで接続するプリンターを設定します。</li>
+	<li>印刷：テンプレートファイル (.lbx) と用紙情報ファイル (.bin) をSmooth Printに共有し、テンプレートファイルのファイル名を "filename" 入力ボックスに、用紙情報ファイルのファイル名を "size" 入力ボックスに入力します。</li>
+	<li>オブジェクトの置き換え：オブジェクト置き換え機能を使用する場合、テンプレートファイルで設定したオブジェクト名がサンプルプログラムと同じであることを確認します。</li>
+	</ol><br>
+	<hr>
+	<a href="https://support.brother.co.jp/j/s/es/dev/ja/specific/smooth_print/index.html?c=jp&lang=ja&navi=offall&comple=on&redirect=on" class="autowrap"><b>Smooth Printの詳細な使用方法はこちらをご参照ください。</b></a><br><br>
+	<hr>
+	<label>Copyright © 2024 Brother Industries, Ltd. All rights reserved.</label>
+	<p id="result" style="color:#ff0000; width:400px; word-wrap:break-word;"> </p>
+</body>
+</html>
