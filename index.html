@@ -37,12 +37,10 @@
         border: 1px dashed #ccc; 
         background: white; 
     }
-    /* 表示サイズを制限しつつ、データとしては高解像度を維持 */
     #qr_display_area img { 
         max-width: 100%; 
         height: auto; 
         box-shadow: 0 0 5px rgba(0,0,0,0.2);
-        /* 念のためピクセル表示指定も残します */
         image-rendering: pixelated; 
     }
     
@@ -123,12 +121,66 @@
 </div>
 
 <script type="text/javascript">
+    // --- ページ読み込み時 ---
     window.onload = function() {
+        // 1. 保存されたデータがあれば復元
+        restoreFormData();
+
+        // 2. 結果パラメータの確認
         const urlParams = new URLSearchParams(window.location.search);
         const result = urlParams.get('result');
         if (result === 'success') showResult('印刷リクエスト送信成功', true);
         else if (result === 'fail') showResult('印刷リクエスト送信失敗', false);
+
+        // 3. 復元した値に基づいて再計算・QR再表示（任意）
+        calculatePreview();
+        // データが十分にあれば自動でQR生成まで行っても良いが、
+        // ここでは誤操作防止のため数値計算のみにとどめます。
+        if(document.getElementById('item_name').value && document.getElementById('price_ex_tax').value){
+             // 必要であればここで generateMenuData() を呼ぶことも可能
+        }
     };
+
+    // --- フォームデータの保存・復元ロジック ---
+    function saveFormData() {
+        const data = {
+            store_code: document.getElementById('store_code').value,
+            item_code: document.getElementById('item_code').value,
+            tax_rate: document.getElementById('tax_rate').value,
+            reduced_tax: document.getElementById('reduced_tax').checked,
+            item_name: document.getElementById('item_name').value,
+            price_ex_tax: document.getElementById('price_ex_tax').value,
+            // 設定値も保存
+            input_printfile: document.getElementById('input_printfile').value,
+            input_binfile: document.getElementById('input_binfile').value,
+            input_quantity: document.getElementById('input_quantity').value
+        };
+        sessionStorage.setItem('menu_qr_form_data', JSON.stringify(data));
+    }
+
+    function restoreFormData() {
+        const saved = sessionStorage.getItem('menu_qr_form_data');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                if(data.store_code) document.getElementById('store_code').value = data.store_code;
+                if(data.item_code) document.getElementById('item_code').value = data.item_code;
+                if(data.tax_rate) document.getElementById('tax_rate').value = data.tax_rate;
+                if(data.reduced_tax !== undefined) document.getElementById('reduced_tax').checked = data.reduced_tax;
+                if(data.item_name) document.getElementById('item_name').value = data.item_name;
+                if(data.price_ex_tax) document.getElementById('price_ex_tax').value = data.price_ex_tax;
+                
+                // 設定値
+                if(data.input_printfile) document.getElementById('input_printfile').value = data.input_printfile;
+                if(data.input_binfile) document.getElementById('input_binfile').value = data.input_binfile;
+                if(data.input_quantity) document.getElementById('input_quantity').value = data.input_quantity;
+            } catch (e) {
+                console.error("Failed to restore form data", e);
+            }
+        }
+    }
+
+    // --- 以下、既存ロジック ---
 
     function toggleSettings() {
         const area = document.getElementById('settings_area');
@@ -185,7 +237,6 @@
         const taxAmt = calc.taxAmt;
         const totalDesc = document.getElementById('price_display').value;
 
-        // --- バイトデータ構築 ---
         const CODE_K = toSjisBytes("K");
         const COMMA = toSjisBytes(",");
         const STAR = toSjisBytes("*");
@@ -222,6 +273,9 @@
         document.getElementById('btn_print').disabled = false;
         
         showResult("データ生成完了 (48bytes)", true);
+        
+        // 生成時にも念のため保存しておく（誤ってリロードしたとき用）
+        saveFormData();
     }
 
     function drawCompositeImage(topText, bottomText) {
@@ -234,12 +288,11 @@
         qr.addData(binaryString, 'Byte');
         qr.make();
         
-        // ★改善点：解像度を大幅に上げる
-        const cellSize = 12; // 元は5。大きくして鮮明にする
-        const margin = 20;   // マージンも広げる
+        const cellSize = 12; 
+        const margin = 20;   
         const qrSize = qr.getModuleCount() * cellSize;
         
-        const fontSize = 32; // フォントも大きく
+        const fontSize = 32; 
         
         const canvasWidth = Math.max(400, qrSize + margin * 2);
         const canvasHeight = margin + fontSize + margin + qrSize + margin + fontSize + margin;
@@ -249,23 +302,18 @@
         canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d');
 
-        // アンチエイリアス無効化（くっきり描画）
         ctx.imageSmoothingEnabled = false;
 
-        // 背景 白
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-        // 文字設定
         ctx.fillStyle = '#000000';
         ctx.font = 'bold ' + fontSize + 'px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // 品名
         ctx.fillText(topText, canvasWidth / 2, margin + fontSize / 2);
 
-        // QRコード描画
         const qrTop = margin + fontSize + margin;
         const qrLeft = (canvasWidth - qrSize) / 2;
         
@@ -273,13 +321,11 @@
             for (let c = 0; c < qr.getModuleCount(); c++) {
                 if (qr.isDark(r, c)) {
                     ctx.fillStyle = '#000000';
-                    // 座標を整数に保つことで滲みを防ぐ
                     ctx.fillRect(Math.floor(qrLeft + c * cellSize), Math.floor(qrTop + r * cellSize), cellSize, cellSize);
                 }
             }
         }
 
-        // 価格
         ctx.fillStyle = '#000000';
         const priceTop = qrTop + qrSize + margin + fontSize / 2;
         ctx.fillText(bottomText, canvasWidth / 2, priceTop);
@@ -321,6 +367,9 @@
 
     function sendPrintRequest() {
         if (!currentDisplayString) return;
+
+        // ★ここでフォームの状態を保存する
+        saveFormData();
 
         const scheme = "brotherwebprint://print";
         const filename = document.getElementById("input_printfile").value;
