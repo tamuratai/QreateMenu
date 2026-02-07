@@ -1,638 +1,358 @@
 ﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover" />
-  <title>メニューブックQR 生成</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QreateMenu - Menu QR Generator</title>
 
-  <style>
-    :root{
-      --bg:#0b0f14;
-      --card:#111824;
-      --text:#e8eef6;
-      --muted:#a9b6c6;
-      --line:rgba(255,255,255,.12);
-      --danger:#ff6b6b;
-      --accent:#6ee7ff;
-      --radius:16px;
-      --pad:14px;
-      --h:56px;
-      --shadow: 0 12px 30px rgba(0,0,0,.35);
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
-      background: radial-gradient(1200px 800px at 50% -10%, rgba(110,231,255,.08), transparent 55%), var(--bg);
-      color:var(--text);
-    }
-    header{
-      padding: 16px 16px 10px;
-      position: sticky;
-      top: 0;
-      background: linear-gradient(to bottom, rgba(11,15,20,.92), rgba(11,15,20,.72));
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line);
-      z-index: 10;
-    }
-    header h1{ font-size: 18px; margin:0; letter-spacing: .2px; }
-    header .sub{ margin-top:6px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
-    main{
-      padding: 12px 16px 110px;
-      max-width: 860px;
-      margin: 0 auto;
+<style>
+    body { font-family: "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; color: #333; }
+    h2 { color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px; }
+    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; }
+    input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+    input[type="checkbox"] { transform: scale(1.5); margin-left: 5px; }
+    .calculated-field { background-color: #e9ecef; color: #495057; }
+    hr { margin: 20px 0; border: 0; border-top: 1px solid #ddd; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    button { flex: 1; min-width: 140px; padding: 12px; font-size: 16px; border: none; border-radius: 4px; cursor: pointer; color: #fff; font-weight: bold; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
+    .btn-generate { background-color: #28a745; }
+    .btn-save { background-color: #17a2b8; }
+    .btn-print { background-color: #007bff; }
+    .btn-copy { background-color: #6c757d; }
+    
+    #qr_display_area { 
+        text-align: center; 
+        margin-top: 20px; 
+        padding: 10px; 
+        min-height: 200px; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        border: 1px dashed #ccc; 
+        background: white; 
     }
-    .card{
-      background: linear-gradient(180deg, rgba(17,24,36,.92), rgba(15,22,33,.92));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: var(--pad);
-      box-shadow: var(--shadow);
+    /* 表示サイズを制限しつつ、データとしては高解像度を維持 */
+    #qr_display_area img { 
+        max-width: 100%; 
+        height: auto; 
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        /* 念のためピクセル表示指定も残します */
+        image-rendering: pixelated; 
     }
-    .grid{ display:grid; gap: 12px; }
-    .two{
-      display:grid;
-      gap: 12px;
-      grid-template-columns: 1fr;
+    
+    #generated_string { 
+        font-family: monospace; 
+        word-break: break-all; 
+        background: #eee; 
+        padding: 10px; 
+        margin-top: 10px; 
+        font-size: 14px; 
+        border-radius: 4px;
     }
-    @media (min-width: 720px){
-      .two{ grid-template-columns: 1fr 1fr; }
-    }
-    label{
-      display:block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .field{
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 14px;
-      padding: 12px 12px;
-      display:flex;
-      align-items:center;
-      gap: 10px;
-    }
-    .field input{
-      width:100%;
-      border:0;
-      outline:none;
-      background:transparent;
-      color: var(--text);
-      font-size: 18px;
-      line-height: 1.2;
-    }
-    .field input[readonly]{ opacity:.85; }
-    .hint{ margin-top:6px; font-size: 12px; color: var(--muted); }
+    #result_message { margin-top: 15px; font-weight: bold; text-align: center; min-height: 24px; }
+    .success { color: green; }
+    .error { color: red; }
 
-    .row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .chip{
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-    }
-
-    .seg{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .seg button{
-      flex:1;
-      min-width: 140px;
-      height: 44px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      font-size: 16px;
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .seg button.active{
-      background: rgba(110,231,255,.18);
-      border-color: rgba(110,231,255,.38);
-    }
-
-    .warn{
-      color: var(--danger);
-      white-space: pre-line;
-      font-size: 13px;
-      margin-top: 10px;
-    }
-    details{
-      margin-top: 10px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.04);
-      padding: 10px 12px;
-    }
-    summary{
-      cursor:pointer;
-      color: var(--muted);
-      font-size: 12px;
-      list-style:none;
-    }
-    summary::-webkit-details-marker{ display:none; }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    code{
-      display:block;
-      margin-top:10px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(0,0,0,.25);
-      border: 1px solid rgba(255,255,255,.10);
-      word-break: break-all;
-      color: var(--text);
-      font-size: 12px;
-    }
-
-    .qrWrap{
-      display:flex;
-      gap: 12px;
-      align-items:flex-start;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-    #previewCanvas{
-      background:#fff;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.20);
-      display:block;
-      width: 260px;
-      height: auto;
-    }
-    .qrInfo{ flex: 1; min-width: 220px; }
-
-    .bar{
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-      background: linear-gradient(to top, rgba(11,15,20,.96), rgba(11,15,20,.72));
-      border-top: 1px solid var(--line);
-      backdrop-filter: blur(10px);
-      z-index: 20;
-    }
-    .barInner{
-      max-width: 860px;
-      margin: 0 auto;
-      display:flex;
-      gap: 10px;
-    }
-    .btn{
-      height: var(--h);
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      font-size: 16px;
-      padding: 0 14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 8px;
-      flex:1;
-      cursor:pointer;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btnPrimary{
-      background: linear-gradient(180deg, rgba(110,231,255,.22), rgba(110,231,255,.10));
-      border-color: rgba(110,231,255,.35);
-    }
-    .btn:active{ transform: translateY(1px); }
-    a.dl{
-      flex:1;
-      text-decoration:none;
-      display:none;
-    }
-    .toast{
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: calc(86px + env(safe-area-inset-bottom));
-      background: rgba(0,0,0,.65);
-      border: 1px solid rgba(255,255,255,.14);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .2s ease;
-    }
-    .toast.show{ opacity:1; }
-  </style>
-
-  <!-- QR生成 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Shift-JIS変換（半角カナを 0xA1-0xDF / 例: ﾀ=0xC0 にするため） -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js"></script>
-  <script>
-    // qrcodejs用 SJIS変換関数（※全角は入力で弾く方針）
-    if (!window.qrcode) window.qrcode = {};
-    if (!qrcode.stringToBytesFuncs) qrcode.stringToBytesFuncs = {};
-    qrcode.stringToBytesFuncs['SJIS'] = function(str) {
-      // encoding-japanese の "SJIS" は一般に Windows-31J 相当のマッピングです。
-      return Encoding.convert(Encoding.stringToCode(str), { to:'SJIS', from:'UNICODE' });
-    };
-  </script>
+    .settings-area { display: none; background: #fff3cd; padding: 10px; margin-bottom: 10px; border: 1px solid #ffeeba; }
+    .settings-toggle { font-size: 12px; color: #856404; cursor: pointer; text-decoration: underline; margin-bottom: 10px; display: inline-block; }
+</style>
 </head>
 
 <body>
-<header>
-  <h1>メニューブックQR 生成</h1>
-  <div class="sub">
-    ヘッダK＋店舗(4)＋「,」＋商品(4)＋…（全48文字固定）。<br>
-    店舗/商品コードは<strong>右詰め・左0埋め</strong>。品名は左詰め・右スペース。<br>
-    税率はボタン（8/10）で選択、8%時のみ軽減税率フラグ“*”を自動反映。<br>
-    品名は <strong>英数/記号/半角ｶﾅ</strong> のみ（全角はエラー）。
-  </div>
-</header>
+<div class="container">
+    <h2>Menu QR Generator</h2>
 
-<main>
-  <div class="grid">
-    <section class="card">
-      <div class="two">
-        <div>
-          <label>店舗コード（半角数字 1〜4桁 / 右詰め・左0埋め）</label>
-          <div class="field">
-            <input id="storeCode" type="tel" inputmode="numeric" autocomplete="off" placeholder="例: 12 → 0012" maxlength="4">
-          </div>
-          <div class="hint">カンマは入力しません（生成時に固定付与）。</div>
-        </div>
+    <span class="settings-toggle" onclick="toggleSettings()">▼ プリンタ設定を表示/非表示</span>
+    <div id="settings_area" class="settings-area">
+        <div class="form-group"><label>Template URL (lbx):</label><input type="text" id="input_printfile" value="https://tamuratai.github.io/QreateMenu/AES-CUT_MenuQRcode.lbx"></div>
+        <div class="form-group"><label>Media Size (bin):</label><input type="text" id="input_binfile" value="Width24mm"></div>
+        <div class="form-group"><label>Copies:</label><input type="number" id="input_quantity" value="1"></div>
+    </div>
 
-        <div>
-          <label>商品コード（半角数字 1〜4桁 / 右詰め・左0埋め）</label>
-          <div class="field">
-            <input id="itemCode" type="tel" inputmode="numeric" autocomplete="off" placeholder="例: 7 → 0007" maxlength="4">
-          </div>
-        </div>
-      </div>
+    <div class="form-group">
+        <label>店舗コード (4桁)</label>
+        <input type="text" id="store_code" maxlength="4" placeholder="例: 1234">
+    </div>
+    <div class="form-group">
+        <label>商品コード (4桁)</label>
+        <input type="text" id="item_code" maxlength="4" placeholder="例: 0001">
+    </div>
+    <div class="form-group">
+        <label>税率 (%)</label>
+        <input type="number" id="tax_rate" value="10" onchange="calculatePreview()">
+    </div>
+    <div class="form-group">
+        <label>軽減税率対象 <input type="checkbox" id="reduced_tax"></label>
+    </div>
+    <div class="form-group">
+        <label>品名 (半角推奨)</label>
+        <input type="text" id="item_name" placeholder="例: ﾐｿﾗｰﾒﾝ (全角も可)">
+    </div>
+    <div class="form-group">
+        <label>税抜き価格</label>
+        <input type="number" id="price_ex_tax" placeholder="例: 900" onchange="calculatePreview()">
+    </div>
+    <div class="form-group">
+        <label>税額 (自動計算)</label>
+        <input type="text" id="tax_amount_display" class="calculated-field" readonly>
+    </div>
+    <div class="form-group">
+        <label>税込価格 (自動計算・印字用)</label>
+        <input type="text" id="price_display" class="calculated-field" readonly>
+    </div>
 
-      <div style="margin-top:12px;">
-        <label>税率（排他的選択 / デフォルト10%）</label>
-        <div class="seg">
-          <button id="btnTax10" type="button" class="active" aria-pressed="true">10%</button>
-          <button id="btnTax8" type="button" aria-pressed="false">8%（軽減）</button>
-        </div>
-        <div class="row" style="margin-top:8px;">
-          <span class="chip">8%→税率“08”</span>
-          <span class="chip">8%→軽減フラグ“*”</span>
-          <span class="chip">10%→軽減フラグ“ ”</span>
-        </div>
-      </div>
+    <div class="btn-group">
+        <button class="btn-generate" onclick="generateMenuData()">QR生成</button>
+        <button class="btn-save" id="btn_save" onclick="saveQRImage()" disabled>QR画像保存 (PNG)</button>
+        <button class="btn-copy" id="btn_copy" onclick="copyToClipboard()" disabled>文字列コピー</button>
+        <button class="btn-print" id="btn_print" onclick="sendPrintRequest()" disabled>QR印字 (Brother)</button>
+    </div>
 
-      <div style="margin-top:12px;">
-        <label>品名（最大20 / 左詰め・右スペース / カンマ不可 / 英数・記号・半角ｶﾅのみ）</label>
-        <div class="field">
-          <input id="name" type="text" inputmode="text" autocomplete="off" placeholder="例: ｼｬﾝﾌﾟｰ-A 500ml / ﾀﾑﾗﾀ" maxlength="20">
-        </div>
-        <div class="hint">保存ファイル名には「フォーム入力の品名（余白なし）」を使います。</div>
-      </div>
-
-      <div class="two" style="margin-top:12px;">
-        <div>
-          <label>税抜き価格（半角数字 最大6 / 左詰め・右スペース）</label>
-          <div class="field">
-            <input id="priceEx" type="tel" inputmode="numeric" autocomplete="off" placeholder="例: 1000" maxlength="6">
-          </div>
-        </div>
-        <div>
-          <label>税（自動計算 / 左詰め・右スペース）</label>
-          <div class="field">
-            <input id="taxAmount" type="text" readonly placeholder="自動計算">
-          </div>
-          <div class="hint">税抜き価格 または 税率変更で更新します。</div>
-        </div>
-      </div>
-
-      <div class="two" style="margin-top:12px;">
-        <div>
-          <label>請求金額（税抜＋税）</label>
-          <div class="field">
-            <input id="totalAmount" type="text" readonly placeholder="自動計算">
-          </div>
-        </div>
-        <div class="hint" style="margin-top:28px;">
-          ※PNG画像にも「品名（上）＋QR＋請求金額（下, ￥付き）」を合成して表示します。
-        </div>
-      </div>
-
-      <div id="msg" class="warn"></div>
-
-      <details>
-        <summary>生成レコードの確認（固定長48 / スペース含む）</summary>
-        <code id="payload" class="mono"></code>
-        <div class="hint">スペース可視化（表示専用）：</div>
-        <code id="payloadVisible" class="mono"></code>
-        <div class="hint">品名（入力値）のSJISバイト確認（参考）：</div>
-        <code id="nameSjisHex" class="mono"></code>
-      </details>
-
-      <div class="qrWrap" style="display:none;" id="qrSection">
-        <canvas id="previewCanvas" width="320" height="400"></canvas>
-        <div class="qrInfo">
-          <div class="hint">PNG保存名：<span class="mono" id="fname"></span></div>
-          <div class="hint">※表示/保存されるPNGは合成画像（品名＋QR＋請求金額）です。</div>
-        </div>
-      </div>
-
-      <!-- QR生成用（画面外） -->
-      <div id="qrcode" style="position:absolute; left:-99999px; top:-99999px;"></div>
-    </section>
-  </div>
-</main>
-
-<div class="bar">
-  <div class="barInner">
-    <button class="btn btnPrimary" id="btnGen">QR生成</button>
-
-    <a class="dl" id="btnDl" download="menu_qr.png">
-      <div class="btn">PNG保存</div>
-    </a>
-
-    <button class="btn" id="btnCopy" type="button">文字列コピー</button>
-  </div>
+    <div id="qr_display_area"><span style="color:#ccc;">QRコードがここに表示されます</span></div>
+    
+    <label style="font-size:12px; font-weight:bold; margin-top:10px; display:block;">生成データ (48byte):</label>
+    <div id="generated_string">データ未生成</div>
+    
+    <div id="result_message"></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<script type="text/javascript">
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const result = urlParams.get('result');
+        if (result === 'success') showResult('印刷リクエスト送信成功', true);
+        else if (result === 'fail') showResult('印刷リクエスト送信失敗', false);
+    };
 
-<script>
-  const $ = (id) => document.getElementById(id);
-
-  const LEN_STORE = 4, LEN_ITEM = 4, LEN_NAME = 20, LEN_PRICE_EX = 6, LEN_TAX_AMT = 5;
-  let currentTaxRate = 10; // 8 or 10
-
-  function isHalfWidthDigits(s){ return /^[0-9]+$/.test(s); }
-  function padLeftFill(s, len, fillChar){
-    s = String(s ?? "");
-    if (s.length > len) return null;
-    return fillChar.repeat(len - s.length) + s;
-  }
-  function padRightFill(s, len, fillChar){
-    s = String(s ?? "");
-    if (s.length > len) return null;
-    return s + fillChar.repeat(len - s.length);
-  }
-  function setMessage(text){ $("msg").textContent = text || ""; }
-  function visualizeSpaces(s){ return s.replace(/ /g, "·"); }
-
-  function showToast(text){
-    const t = $("toast");
-    t.textContent = text;
-    t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 1200);
-  }
-
-  function sanitizeFilenamePart(s){
-    let t = String(s ?? "");
-    t = t.replace(/[\\\/:*?"<>|]/g, "_");
-    t = t.replace(/[\. ]+$/g, "");
-    if (t.trim() === "") t = "noname";
-    if (t.length > 60) t = t.slice(0, 60);
-    return t;
-  }
-
-  function formatWithComma(n){
-    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  }
-
-  function calcTax(priceEx, rate){
-    return Math.floor(priceEx * rate / 100);   // 切り捨て
-  }
-
-  function updateTaxAuto(){
-    const exRaw = $("priceEx").value.trim();
-    if (!exRaw || !isHalfWidthDigits(exRaw)) {
-      $("taxAmount").value = "";
-      $("totalAmount").value = "";
-      return;
-    }
-    const ex = parseInt(exRaw, 10);
-    const tax = calcTax(ex, currentTaxRate);
-    const total = ex + tax;
-
-    $("taxAmount").value = String(tax);
-    $("totalAmount").value = "￥" + formatWithComma(total);
-  }
-
-  function setTaxRate(rate){
-    currentTaxRate = rate;
-    const is10 = (rate === 10);
-    $("btnTax10").classList.toggle("active", is10);
-    $("btnTax10").setAttribute("aria-pressed", is10 ? "true" : "false");
-    $("btnTax8").classList.toggle("active", !is10);
-    $("btnTax8").setAttribute("aria-pressed", !is10 ? "true" : "false");
-    updateTaxAuto();
-  }
-
-  $("btnTax10").addEventListener("click", () => setTaxRate(10));
-  $("btnTax8").addEventListener("click", () => setTaxRate(8));
-  $("priceEx").addEventListener("input", updateTaxAuto);
-
-  // 英数(0x20-0x7E) + 半角カナ(FF61-FF9F) のみ許可（※カンマは別途禁止）
-  function isAllowedNameCharset(s){
-    for (const ch of s){
-      const cp = ch.codePointAt(0);
-      if (cp === 0x2C) return false; // ',' は禁止
-      const isAscii = (cp >= 0x20 && cp <= 0x7E);
-      const isHalfKana = (cp >= 0xFF61 && cp <= 0xFF9F);
-      if (!isAscii && !isHalfKana) return false;
-    }
-    return true;
-  }
-
-  function toSjisHex(str){
-    const bytes = qrcode.stringToBytesFuncs['SJIS'](str);
-    return bytes.map(b => b.toString(16).toUpperCase().padStart(2,'0')).join(',');
-  }
-
-  function buildPayload(){
-    const errors = [];
-    const header = "K";
-    const sep = ",";
-
-    const storeIn = $("storeCode").value.trim();
-    if (!storeIn || !isHalfWidthDigits(storeIn)) errors.push("店舗コード：半角数字で1～4桁入力してください。");
-    const store = padLeftFill(storeIn, 4, "0");
-    if (store === null) errors.push("店舗コード：4文字を超えています。");
-
-    const itemIn = $("itemCode").value.trim();
-    if (!itemIn || !isHalfWidthDigits(itemIn)) errors.push("商品コード：半角数字で1～4桁入力してください。");
-    const item = padLeftFill(itemIn, 4, "0");
-    if (item === null) errors.push("商品コード：4文字を超えています。");
-
-    const tax = (currentTaxRate === 8) ? "08" : "10";
-    const reduced = (currentTaxRate === 8) ? "*" : " ";
-
-    const nameRaw = $("name").value.trim();
-    if (!nameRaw) errors.push("品名：必須です。");
-    if (!isAllowedNameCharset(nameRaw)) {
-      errors.push("品名：全角文字は不可です（英数/記号/半角ｶﾅのみ）。");
-    }
-    const name = padRightFill(nameRaw, LEN_NAME, " ");
-    if (name === null) errors.push(`品名：${LEN_NAME}文字を超えています。`);
-
-    const priceExIn = $("priceEx").value.trim();
-    if (!priceExIn || !isHalfWidthDigits(priceExIn)) errors.push("税抜き価格：半角数字で1～6桁入力してください。");
-    const priceEx = padRightFill(priceExIn, LEN_PRICE_EX, " ");
-    if (priceEx === null) errors.push(`税抜き価格：${LEN_PRICE_EX}文字を超えています。`);
-
-    const ex = (priceExIn && isHalfWidthDigits(priceExIn)) ? parseInt(priceExIn, 10) : NaN;
-    if (!Number.isFinite(ex)) errors.push("税：税抜き価格が未入力または不正です。");
-    const taxNum = Number.isFinite(ex) ? calcTax(ex, currentTaxRate) : 0;
-    const taxAmtStr = String(taxNum);
-    if (taxAmtStr.length > LEN_TAX_AMT) errors.push(`税：${LEN_TAX_AMT}桁を超えています。`);
-    const taxAmt = padRightFill(taxAmtStr, LEN_TAX_AMT, " ");
-
-    if (errors.length) return { error: errors.join("\n") };
-
-    const payload =
-      header + store + sep + item + sep + tax + reduced + sep + name + sep + priceEx + sep + taxAmt;
-
-    const total = ex + taxNum;
-    return { payload, itemEncoded: item, nameRaw, total };
-  }
-
-  function renderQRToHidden(payload){
-    const qrDiv = $("qrcode");
-    qrDiv.innerHTML = "";
-
-    // ★ここが重要：qrcodejsにSJISバイト化関数を使わせる
-    QRCode.stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
-
-    new QRCode(qrDiv, { text: payload, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
-  }
-
-  function drawCompositeImage(nameRaw, total, qrSource){
-    const out = $("previewCanvas");
-    const ctx = out.getContext("2d");
-
-    const w = 320;
-    const padding = 18;
-    const titleH = 42;
-    const footH  = 42;
-    const qrSize = 220;
-    const h = padding + titleH + 10 + qrSize + 10 + footH + padding;
-
-    out.width = w;
-    out.height = h;
-
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.fillStyle = "#000000";
-    ctx.font = "bold 18px system-ui, -apple-system, Segoe UI, Roboto, Noto Sans JP, sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(nameRaw, w/2, padding + titleH/2);
-
-    const qrX = (w - qrSize)/2;
-    const qrY = padding + titleH + 10;
-    ctx.drawImage(qrSource, qrX, qrY, qrSize, qrSize);
-
-    const amountText = "請求金額 ￥" + formatWithComma(total);
-    const footY = qrY + qrSize + 10 + footH/2;
-    ctx.fillText(amountText, w/2, footY);
-  }
-
-  function enableDownloadFromPreview(filename){
-    const a = $("btnDl");
-    const canvas = $("previewCanvas");
-    a.href = canvas.toDataURL("image/png");
-    a.download = filename;
-    a.style.display = "block";
-  }
-
-  $("btnGen").addEventListener("click", () => {
-    setMessage("");
-    $("btnDl").style.display = "none";
-    $("payload").textContent = "";
-    $("payloadVisible").textContent = "";
-    $("nameSjisHex").textContent = "";
-    $("qrcode").innerHTML = "";
-    $("qrSection").style.display = "none";
-
-    updateTaxAuto();
-
-    const res = buildPayload();
-    if (res.error){
-      setMessage(res.error);
-      return;
+    function toggleSettings() {
+        const area = document.getElementById('settings_area');
+        area.style.display = area.style.display === 'block' ? 'none' : 'block';
     }
 
-    $("payload").textContent = res.payload;
-    $("payloadVisible").textContent = visualizeSpaces(res.payload);
-    // 参考：品名のSJISバイトを表示（例: ﾀﾑﾗﾀ → C0,D1,D7,C0）
-    $("nameSjisHex").textContent = toSjisHex(res.nameRaw);
+    function calculatePreview() {
+        const price = parseInt(document.getElementById('price_ex_tax').value) || 0;
+        const rate = parseInt(document.getElementById('tax_rate').value) || 0;
+        const taxAmt = Math.floor(price * (rate / 100));
+        const total = price + taxAmt;
+        
+        document.getElementById('tax_amount_display').value = taxAmt + "円";
+        document.getElementById('price_display').value = total + "円(税込)";
+        return { taxAmt, total };
+    }
 
-    renderQRToHidden(res.payload);
+    function toSjisBytes(str) {
+        return Encoding.convert(Encoding.stringToCode(str), {to: 'SJIS', from: 'UNICODE'});
+    }
 
-    // ★canvas/imgどちらでも合成できるようにする
-    setTimeout(() => {
-      const qrDiv = $("qrcode");
-      const qrCanvas = qrDiv.querySelector("canvas");
-      const qrImg = qrDiv.querySelector("img");
-
-      const after = () => {
-        const fname = sanitizeFilenamePart(res.itemEncoded) + "_" + sanitizeFilenamePart(res.nameRaw) + ".png";
-        $("fname").textContent = fname;
-        enableDownloadFromPreview(fname);
-        $("qrSection").style.display = "flex";
-        showToast("QRを生成しました");
-        console.log("[QR] len=", res.payload.length, res.payload);
-      };
-
-      if (qrCanvas){
-        drawCompositeImage(res.nameRaw, res.total, qrCanvas);
-        after();
-        return;
-      }
-
-      if (qrImg){
-        if (qrImg.complete){
-          drawCompositeImage(res.nameRaw, res.total, qrImg);
-          after();
-          return;
+    function padBytes(byteArray, targetLength, padByteVal, align) {
+        if (byteArray.length >= targetLength) {
+            return byteArray.slice(0, targetLength);
         }
-        qrImg.onload = () => { drawCompositeImage(res.nameRaw, res.total, qrImg); after(); };
-        qrImg.onerror = () => setMessage("QR生成に失敗しました（imgロード失敗）。");
-        return;
-      }
-
-      setMessage("QR生成に失敗しました（canvas/imgが取得できません）。");
-    }, 120);
-  });
-
-  $("btnCopy").addEventListener("click", async () => {
-    const text = $("payload").textContent || "";
-    if (!text){
-      setMessage("先にQR生成してください（レコード文字列が空です）。");
-      return;
+        const diff = targetLength - byteArray.length;
+        const pads = new Array(diff).fill(padByteVal);
+        return align === 'right' ? pads.concat(byteArray) : byteArray.concat(pads);
     }
-    try{
-      await navigator.clipboard.writeText(text);
-      showToast("コピーしました");
-    }catch(e){
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      showToast("コピーしました");
-    }
-  });
 
-  setTaxRate(10);
-  updateTaxAuto();
+    function concatBytes(arrays) {
+        let total = [];
+        arrays.forEach(arr => { total = total.concat(arr); });
+        return total;
+    }
+
+    function bytesToString(bytes) {
+        return Encoding.convert(bytes, {to: 'UNICODE', from: 'SJIS', type: 'string'});
+    }
+
+    let currentSjisBytes = [];
+    let currentDisplayString = "";
+    let currentCanvas = null;
+
+    function generateMenuData() {
+        const storeCode = document.getElementById('store_code').value;
+        const itemCode = document.getElementById('item_code').value;
+        const taxRate = document.getElementById('tax_rate').value;
+        const isReduced = document.getElementById('reduced_tax').checked;
+        const itemName = document.getElementById('item_name').value;
+        const price = document.getElementById('price_ex_tax').value;
+        
+        const calc = calculatePreview();
+        const taxAmt = calc.taxAmt;
+        const totalDesc = document.getElementById('price_display').value;
+
+        // --- バイトデータ構築 ---
+        const CODE_K = toSjisBytes("K");
+        const COMMA = toSjisBytes(",");
+        const STAR = toSjisBytes("*");
+        const SPACE = toSjisBytes(" ");
+        
+        const b_store = padBytes(toSjisBytes(storeCode), 4, 0x30, 'right');
+        const b_item = padBytes(toSjisBytes(itemCode), 4, 0x30, 'right');
+        const b_rate = padBytes(toSjisBytes(taxRate), 2, 0x30, 'right');
+        const b_reduced = isReduced ? STAR : SPACE;
+        const b_name = padBytes(toSjisBytes(itemName), 20, 0x20, 'left');
+        const b_price = padBytes(toSjisBytes(price), 6, 0x20, 'left');
+        const b_tax = padBytes(toSjisBytes(taxAmt.toString()), 5, 0x20, 'left');
+
+        const fullBytes = concatBytes([
+            CODE_K,
+            b_store, COMMA,
+            b_item, COMMA,
+            b_rate, 
+            b_reduced, COMMA,
+            b_name, COMMA,
+            b_price, COMMA,
+            b_tax
+        ]);
+
+        currentSjisBytes = fullBytes;
+        currentDisplayString = bytesToString(fullBytes);
+
+        document.getElementById('generated_string').innerText = currentDisplayString;
+
+        drawCompositeImage(itemName, totalDesc);
+
+        document.getElementById('btn_save').disabled = false;
+        document.getElementById('btn_copy').disabled = false;
+        document.getElementById('btn_print').disabled = false;
+        
+        showResult("データ生成完了 (48bytes)", true);
+    }
+
+    function drawCompositeImage(topText, bottomText) {
+        let binaryString = "";
+        for (let i = 0; i < currentSjisBytes.length; i++) {
+            binaryString += String.fromCharCode(currentSjisBytes[i]);
+        }
+        
+        const qr = qrcode(0, 'M');
+        qr.addData(binaryString, 'Byte');
+        qr.make();
+        
+        // ★改善点：解像度を大幅に上げる
+        const cellSize = 12; // 元は5。大きくして鮮明にする
+        const margin = 20;   // マージンも広げる
+        const qrSize = qr.getModuleCount() * cellSize;
+        
+        const fontSize = 32; // フォントも大きく
+        
+        const canvasWidth = Math.max(400, qrSize + margin * 2);
+        const canvasHeight = margin + fontSize + margin + qrSize + margin + fontSize + margin;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
+
+        // アンチエイリアス無効化（くっきり描画）
+        ctx.imageSmoothingEnabled = false;
+
+        // 背景 白
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        // 文字設定
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold ' + fontSize + 'px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // 品名
+        ctx.fillText(topText, canvasWidth / 2, margin + fontSize / 2);
+
+        // QRコード描画
+        const qrTop = margin + fontSize + margin;
+        const qrLeft = (canvasWidth - qrSize) / 2;
+        
+        for (let r = 0; r < qr.getModuleCount(); r++) {
+            for (let c = 0; c < qr.getModuleCount(); c++) {
+                if (qr.isDark(r, c)) {
+                    ctx.fillStyle = '#000000';
+                    // 座標を整数に保つことで滲みを防ぐ
+                    ctx.fillRect(Math.floor(qrLeft + c * cellSize), Math.floor(qrTop + r * cellSize), cellSize, cellSize);
+                }
+            }
+        }
+
+        // 価格
+        ctx.fillStyle = '#000000';
+        const priceTop = qrTop + qrSize + margin + fontSize / 2;
+        ctx.fillText(bottomText, canvasWidth / 2, priceTop);
+
+        const displayArea = document.getElementById('qr_display_area');
+        displayArea.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        displayArea.appendChild(img);
+
+        currentCanvas = canvas;
+    }
+
+    function saveQRImage() {
+        if (!currentCanvas) return;
+        
+        const itemCode = document.getElementById('item_code').value || '0000';
+        const itemName = document.getElementById('item_name').value || 'item';
+
+        const safeItemName = itemName.replace(/[\\/:*?"<>|]/g, '_');
+        const filename = itemCode + '_' + safeItemName + '.png';
+
+        const link = document.createElement('a');
+        link.href = currentCanvas.toDataURL('image/png');
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function copyToClipboard() {
+        if (!currentDisplayString) return;
+        navigator.clipboard.writeText(currentDisplayString).then(function() {
+            showResult("データをコピーしました", true);
+        }, function(err) {
+            showResult("コピーに失敗しました", false);
+        });
+    }
+
+    function sendPrintRequest() {
+        if (!currentDisplayString) return;
+
+        const scheme = "brotherwebprint://print";
+        const filename = document.getElementById("input_printfile").value;
+        const size = document.getElementById("input_binfile").value;
+        const copies = document.getElementById("input_quantity").value;
+        const text1 = document.getElementById("item_name").value;
+        const text2 = document.getElementById("price_display").value;
+        
+        const qrCodeData = currentDisplayString; 
+
+        const baseUrl = window.location.href.split('?')[0];
+        const successURL = encodeURIComponent(baseUrl + '?result=success');
+        const failureURL = encodeURIComponent(baseUrl + '?result=fail');
+
+        const url = scheme + '?' +
+            'filename=' + encodeURIComponent(filename) + '&' +
+            'size=' + encodeURIComponent(size) + '&' +
+            'copies=' + encodeURIComponent(copies) + '&' +
+            'barcode_QRcode=' + encodeURIComponent(qrCodeData) + '&' +
+            'text_ItemName=' + encodeURIComponent(text1) + '&' +
+            'text_Price=' + encodeURIComponent(text2) + '&' +
+            'successCallback=' + successURL + '&' +
+            'failureCallback=' + failureURL;
+
+        location.href = url;
+    }
+
+    function showResult(msg, isSuccess) {
+        const el = document.getElementById('result_message');
+        el.innerText = msg;
+        el.className = isSuccess ? 'success' : 'error';
+    }
 </script>
 </body>
 </html>
